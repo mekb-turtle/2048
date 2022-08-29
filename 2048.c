@@ -39,9 +39,9 @@ struct color {
 struct pos {
 	uint8_t i, j;
 };
-unsigned long score = 0;
-int newlines;
-#define newline() { ++newlines; printf("\x1b[0m\n"); }
+unsigned long score;
+int new_lines;
+#define new_line() { ++new_lines; printf("\x1b[0m\n"); }
 uint8_t      board[SIZE][SIZE];
 uint8_t  old_board[SIZE][SIZE];
 uint8_t old2_board[SIZE][SIZE];
@@ -81,26 +81,30 @@ void render_row(uint8_t i[SIZE], bool is_number) {
 	for (int j = 0; j < SIZE; ++j) {
 		render_tile(i[j], is_number);
 	}
+	new_line();
 }
 bool turn = 0;
 void render_board() {
 	if (turn) {
-		for (int j = 0; j < newlines; ++j) printf("\x1bM");
+		for (int j = 0; j < new_lines; ++j) printf("\x1bM");
 	}
 	turn = 1;
-	newlines = 0;
-	newline();
+	new_lines = 0;
+	new_line();
+	new_line();
 	for (int i = 0; i < SIZE; ++i) {
 		for (int j = 0; j < PADV; ++j) {
-			render_row(board[i], 0); newline();
+			render_row(board[i], 0);
 		}
-		render_row(board[i], 1); newline();
+		render_row(board[i], 1);
 		for (int j = 0; j < PADV; ++j) {
-			render_row(board[i], 0); newline();
+			render_row(board[i], 0);
 		}
 	}
-	newline();
-	newline();
+	new_line();
+	printf("\x1b[0mScore: %li", score);
+	new_line();
+	new_line();
 }
 unsigned int seedp;
 int rand_() {
@@ -126,6 +130,7 @@ void merge(int8_t i_, int8_t j_) {
 		if (board[i][j] != board[i+i_][j+j_]) continue;
 		if (board[i][j] == 0) continue;
 		++board[i+i_][j+j_];
+		score += 1ul << (unsigned long)board[i+i_][j+j_];
 		board[i][j] = 0;
 	}
 	}
@@ -180,10 +185,7 @@ int main() {
 	if (gettimeofday(&tv, NULL) != 0) return 1;
 	seedp = tv.tv_usec;
 	memset(board, 0, SIZE*SIZE);
-	/* int p = 0;
-	for (int i = 0; i < SIZE; ++i)
-		for (int j = 0; j < SIZE; ++j)
-			board[i][j] = p++; */
+	score = 0;
 	is_tty = isatty(STDIN_FILENO);
 	if (is_tty) {
 		struct termios term_new;
