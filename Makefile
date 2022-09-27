@@ -1,6 +1,6 @@
 CC=cc
 CFLAGS=-Wall -O2
-LFLAGS=-lm -s
+LFLAGS=-s
 
 OBJS=2048.o
 
